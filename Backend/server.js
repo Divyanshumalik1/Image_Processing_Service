@@ -12,7 +12,7 @@ app.use(cors());
 
 app.use('/', datarouter);
 
-const mongoClient = mongoose.connect('mongodb+srv://dmalik1111:mongodbmalikjaat1@cluster0.irhtv.mongodb.net/ImageProcessingServiceDB?retryWrites=true&w=majority&appName=Cluster0', {
+const mongoClient = mongoose.connect(process.env.MONGO_URI, {
 }).then(() => {
     console.log('Connected to MongoDB');
 }).catch((error) => {
