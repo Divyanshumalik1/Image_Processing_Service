@@ -23,8 +23,8 @@ export default function SignupForm() {
 
       try {
         const data = await response.json();
-        console.log('Response from server:', data);
         setJWTToken(data.token);
+        console.log('Response from server:', data);
 
       }catch{
         console.error('Error parsing JSON response');
