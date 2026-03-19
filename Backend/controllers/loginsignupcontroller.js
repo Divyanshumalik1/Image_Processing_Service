@@ -38,12 +38,7 @@ import User from "../models/Usermodel.js";
 import crypto from "crypto";
 
 
-const AuthenticationMiddleware = (req, res, next) => {
-    
-}
-
-
-function tokengenerator(userdata){
+function tokengenerator(newUser){
 
     // Helper: Base64URL encode
     const base64Url = (str) =>
@@ -53,9 +48,9 @@ function tokengenerator(userdata){
     const secretKey = "your_secret_key";
 
     const payload = {
-        username: userdata.username,
-        userId: userdata._id,
-        exp: Math.floor(Date.now() / 1000) + 60 * 60 ,// 1 hour expiry
+        username: newUser.username,
+        userId: newUser._id, // This userId is the mongodb id object of the user.
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 6 ,// 6 hours expiry
         iat: Math.floor(Date.now() / 1000) // Issued at time
     };
 
@@ -108,7 +103,7 @@ export const logincontroller = async (req, res) => {
 export const signupController = async (req, res) => {
 
     try {
-        const Userdata = req.body;
+        const Userdata = req.body; // { username, password, confirmPassword, email, phone }
         console.log('Received data from client:', Userdata);
 
         if (Userdata.password !== Userdata.confirmPassword) {
@@ -120,10 +115,12 @@ export const signupController = async (req, res) => {
         }
 
         const newUser = new User(Userdata);
+        //change the library to bcrypt for hashing the password instead of crypto.
         newUser.password = crypto.createHash('sha256').update(newUser.password).digest('hex');
         await newUser.save();
 
-        const token = tokengenerator(Userdata);
+        //some doubt here
+        const token = tokengenerator(newUser);
         res.status(201).json({ message: 'Signup successful', token: token });
     } catch {
         res.status(500).json({ message: 'Internal server error' });
