@@ -139,9 +139,37 @@ curl -X GET http://localhost:3000/file/images/69bb9dd1db04de0fa28c06f8 -H "Autho
 
 
 export const FileRetrievalAllController = async (req, res) => {
+  // Use query params that match frontend request: ?page=1&limit=10
+  const pageNumber = parseInt(req.query.page) || 1;
+  const pageLimit = parseInt(req.query.limit) || 10;
 
+  try {
+    // Calculate how many documents to skip
+    const skip = (pageNumber - 1) * pageLimit;
 
-}
+    // Fetch images metadata from MongoDB
+    const imagesMetadata = await Image.find()
+      .sort({ createdAt: -1 })   // newest first
+      .skip(skip)
+      .limit(pageLimit);
+
+    // Get total count for pagination info
+    const total = await Image.countDocuments();
+
+    // Send response with metadata and pagination info
+    res.json({
+      images: imagesMetadata,
+      page: pageNumber,
+      limit: pageLimit,
+      total,
+      totalPages: Math.ceil(total / pageLimit)
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Error occurred while retrieving images" });
+  }
+};
 
 
 export const FileTransformController = async (req, res) => {

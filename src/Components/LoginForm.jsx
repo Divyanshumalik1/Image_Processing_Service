@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import {useNavigate} from 'react-router-dom';
 
 export default function LoginForm() {
 
+    const navigate = useNavigate();
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [JWTToken, setJWTToken] = useState('');
@@ -20,7 +22,10 @@ export default function LoginForm() {
       try {
         const data = await response.json();
         setJWTToken(data.token);
-
+        localStorage.setItem("token", data.token);
+        if(data) {
+          navigate('/services');
+        }
         console.log('Response from server:', data);
       } catch (error) {
         console.error('Error parsing JSON response:', error);

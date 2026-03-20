@@ -16,7 +16,7 @@ FileProcessingRouter.get('/images/:id', AuthenticationMiddleware, FileRetrievalC
 // Get all
 FileProcessingRouter.get('/images', AuthenticationMiddleware, FileRetrievalAllController);
 
-// Transform
-FileProcessingRouter.post('/images/:id/transform', AuthenticationMiddleware, FileTransformController);
+// // Transform
+// FileProcessingRouter.post('/images/:id/transform', AuthenticationMiddleware, FileTransformController);
 
 export default FileProcessingRouter;
