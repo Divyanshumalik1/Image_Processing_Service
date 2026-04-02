@@ -3,6 +3,7 @@ import Home from "./Components/Home";
 import LoginForm from "./Components/LoginForm";
 import SignupForm from "./Components/SignupForm";
 import Services from "./Components/Services";
+import Transforms from "./Components/Transforms";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/login" element={<LoginForm />} />
         <Route path="/signup" element={<SignupForm />} />
         <Route path="/services" element={<Services />} />
+        <Route path="/transforms" element={<Transforms />} />
         {/* <Route path="/services" element={<Services />} /> */}
       </Routes>
     </BrowserRouter>

@@ -1,8 +1,10 @@
 import React from 'react';
-import { useState } from 'react';
+import { useState} from 'react';
+import { useNavigate } from 'react-router-dom';
+import Transforms from './Transforms';
 
 export default function Services() {
-
+    const navigate = useNavigate();
     const [file, setFile] = useState(null);
 
     const token = localStorage.getItem("token");
@@ -48,22 +50,14 @@ export default function Services() {
                 <input type="file" id="fileInput" onChange={(e) => setFile(e.target.files[0])} />
                 <button type="submit">Upload</button>
             </form>
-            <div>{file ? <img src={URL.createObjectURL(file)} alt="Selected" width={"500px"} height={"auto"}/> : 'No file selected'}</div>
+            <div>{file ? <img src={URL.createObjectURL(file)} alt="Selected" width={"500px"} height={"auto"} /> : 'No file selected'}</div>
             {/*URL.createObjectURL(file) is a built-in JavaScript function that creates a temporary URL for a File or Blob object, allowing it to be displayed in an <img> tag. */}
-            <div>
-                Crop <input type="range" min="0" max="10" />
-            </div>
-
-            {/* <div>
-           Rotate <input type="range" min = "0" max = "10" />     
-        </div>
-        <div>
-           Scale <input type="range" min = "0" max = "10" />     
-        </div>
-        <div>
-           Contrast <input type="range" min = "0" max = "10" />     
-        </div> */}
-
+        
+        <button onClick={() => {
+            navigate("/transforms");
+        }}>
+            Transform Page
+        </button>
         </div>
     );
 }

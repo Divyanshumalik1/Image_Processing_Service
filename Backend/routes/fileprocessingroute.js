@@ -1,6 +1,6 @@
 import express from "express";
 import AuthenticationMiddleware from "../middlewares/Authenticationmiddleware.js";
-import { FileUploadController, FileRetrievalController, FileRetrievalAllController} from "../controllers/fileprocessingcontroller.js";
+import { FileUploadController, FileRetrievalController, FileRetrievalAllController, FileTransformController} from "../controllers/fileprocessingcontroller.js";
 import { uploadMiddleware } from "../middlewares/Multermiddleware.js";
 
 const FileProcessingRouter = express.Router();
@@ -17,6 +17,6 @@ FileProcessingRouter.get('/images/:id', AuthenticationMiddleware, FileRetrievalC
 FileProcessingRouter.get('/images', AuthenticationMiddleware, FileRetrievalAllController);
 
 // // Transform
-// FileProcessingRouter.post('/images/:id/transform', AuthenticationMiddleware, FileTransformController);
+FileProcessingRouter.post('/images/:id/transform', AuthenticationMiddleware, FileTransformController);
 
 export default FileProcessingRouter;

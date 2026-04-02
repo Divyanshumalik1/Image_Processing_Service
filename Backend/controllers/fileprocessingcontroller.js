@@ -4,6 +4,7 @@ import { S3Client, PutObjectCommand, GetObjectCommand} from "@aws-sdk/client-s3"
 import User from "../models/Usermodel.js";
 import Image from "../models/Imagemodel.js";
 import { v4 as uuidv4 } from "uuid";
+import sharp from "sharp";
 
 dotenv.config();
 
@@ -174,4 +175,113 @@ export const FileRetrievalAllController = async (req, res) => {
 
 export const FileTransformController = async (req, res) => {
 
-}
+  const imageid = req.params.id; // This is the MongoDB id of the image document, not the S3 key. We will use this id to find the image metadata in MongoDB, and then use the S3 key from the metadata to retrieve the file from S3.
+
+  try{
+     const image = await Image.findOne({_id: imageid});
+
+    if(!image){
+      return res.status(404).json({ error: "Data not found" });
+    }
+
+    if(image.userId.toString() !== req.user.userId.toString()){
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    //FIND DATA IN S3 USING THE KEY FROM MONGODB
+    const filename_key_in_s3 = image.key;
+
+    const command = new GetObjectCommand({
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: filename_key_in_s3
+    });
+
+    const imageData = await s3.send(command);
+
+    if (!imageData || !imageData.Body) {
+      return res.status(404).json({ message: "File not found in S3" });
+    }
+
+    // STREAM → BUFFER
+    const chunks = [];
+    for await (const chunk of imageData.Body) {
+      chunks.push(chunk);
+    }
+    const buffer = Buffer.concat(chunks);
+
+    let img = sharp(buffer);
+
+    const t = req.body.transformations;
+
+    // ================= TRANSFORMS =================
+
+    if (t?.resize) {
+      img = img.resize({
+        width: t.resize.width,
+        height: t.resize.height
+      });
+    }
+
+    if (t?.crop) {
+      img = img.extract({
+        left: t.crop.x,
+        top: t.crop.y,
+        width: t.crop.width,
+        height: t.crop.height
+      });
+    }
+
+    if (t?.rotate) {
+      img = img.rotate(t.rotate);
+    }
+
+    if (t?.filters?.grayscale) {
+      img = img.grayscale();
+    }
+
+    if (t?.filters?.sepia) {
+      img = img.modulate({ saturation: 0.5, hue: 30 });
+    }
+
+    // FORMAT
+    const format = t?.format || "jpeg";
+    img = img.toFormat(format);
+
+    const outputBuffer = await img.toBuffer();
+
+    // ================= NEW KEY =================
+    const newKey = `images/${uuidv4()}.${format}`;
+
+    const uploadCommand = new PutObjectCommand({
+      Bucket: process.env.S3_BUCKET_NAME,
+      Key: newKey,
+      Body: outputBuffer,
+      ContentType: `image/${format}`
+    });
+
+    await s3.send(uploadCommand);
+
+    const newUrl = `https://${process.env.S3_BUCKET_NAME}.s3.amazonaws.com/${newKey}`;
+
+    // ================= UPDATE DB =================
+    image.key = newKey;
+    image.url = newUrl;
+
+    await image.save();
+
+    return res.status(200).json({
+      message: "Transformed successfully",
+      url: newUrl,
+      key: newKey,
+      metadata: {
+        size: outputBuffer.length,
+        format
+      }
+    });
+
+  }catch(err){
+    console.log(err);
+    res.status(500).json({ error: "Transform failed" });
+  }
+};
+ 

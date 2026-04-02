@@ -23,5 +23,23 @@ const ImageSchema = new Schema(
   { timestamps: true }
 );
 
+// const ImageSchema = new mongoose.Schema({
+//   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+//   key: String,
+//   url: String,
+//   contentType: String,
+//   size: Number,
+
+//   versions: [
+//     {
+//       key: String,
+//       url: String,
+//       transformations: Object,
+//       createdAt: Date
+//     }
+//   ]
+// }, { timestamps: true });
+
+
 const Image = mongoose.model("Image", ImageSchema);
 export default Image;
